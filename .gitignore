@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+env/
+
+# Trained model (recreate with: python train_model.py)
+models/*.joblib
+
+# Editors / OS
+.idea/
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
+
+# Streamlit
+.streamlit/secrets.toml
