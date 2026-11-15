@@ -80,19 +80,25 @@ def risk_card(risk: str, probs: dict):
 if page == "Assessment":
     st.subheader("Student risk assessment")
     st.write("Answer five short questions to get a risk level and recommended actions.")
-
+  
+ # Create two columns for the assessment and results.
     left, right = st.columns([1.1, 1])
+  
     with left:
         with st.form("assessment"):
             c1, c2 = st.columns(2)
+
+ # Collect basic student information.
             age = c1.number_input("1. Age", 14, 25, 17)
             sex = c2.selectbox("2. Gender", ["F", "M"], format_func=lambda x: "Female" if x == "F" else "Male")
+ # Collect study time and attendance information.
             studytime = st.select_slider(
                 "3. Weekly study time", options=[1, 2, 3, 4], value=2,
                 format_func=lambda x: {1: "< 2 hrs", 2: "2-5 hrs", 3: "5-10 hrs", 4: "> 10 hrs"}[x])
             absences = st.slider("4. Number of absences", 0, 93, 3)
             g2 = st.slider("5. Second period grade (G2, 0-20)", 0, 20, 11)
 
+ # Collect optional academic and family details.          
             with st.expander("Optional: more details (improves accuracy)"):
                 a1, a2 = st.columns(2)
                 failures = a1.number_input("Previous class failures", 0, 4, int(defaults["failures"]))
@@ -107,10 +113,13 @@ if page == "Assessment":
                                         index=["yes", "no"].index(defaults["internet"]))
             submitted = st.form_submit_button("Analyse", type="primary", width="stretch")
 
+ # Analyse the student's information when submitted.
     if submitted:
         record = dict(age=age, sex=sex, studytime=studytime, absences=absences,
                       failures=failures, Medu=medu, Fedu=fedu, G1=g1, G2=g2,
                       famsup=famsup, schoolsup=schoolsup, internet=internet)
+      
+ # Predict the student's risk level and generate recommendations.      
         risk, probs = M.predict_one(bundle, record, model_choice)
         tips = recommend(record, risk)
         st.session_state["last_result"] = {"risk": risk, "probs": probs, "tips": tips, "record": record}
@@ -118,12 +127,16 @@ if page == "Assessment":
     result = st.session_state.get("last_result")
     with right:
         if result:
+# Display the predicted risk and recommendations.
             risk_card(result["risk"], result["probs"])
             st.markdown("#### Recommendations")
             for t in result["tips"]:
                 st.markdown(f"- {t}")
+
+ # Remind users that predictions are guidance.         
             st.caption("Predictions are guidance, not a final judgement. Combine with professional insight.")
-        else:
+        else: 
+# Display a message before an assessment is completed.      
             st.info("Fill in the form and press **Analyse** to see the result here.")
 
 # ---------------------------------------------------------------------------
@@ -131,9 +144,13 @@ if page == "Assessment":
 # ---------------------------------------------------------------------------
 elif page == "Dashboard":
     st.subheader("Lecturer / administrator dashboard")
+
+# Allow users to choose where student data comes from.
     src = st.radio("Data source", ["Training dataset (student-por)", "Upload a CSV"], horizontal=True)
 
     df = None
+
+  # Load the existing training dataset.
     if src.startswith("Training"):
         if DATA_FILE.exists():
             df = clean(load_raw())
@@ -144,6 +161,8 @@ elif page == "Dashboard":
         up = st.file_uploader("CSV file (comma or semicolon separated)", type="csv")
         if up is not None:
             raw = pd.read_csv(up, sep=None, engine="python")
+
+  # Check for missing required columns.
             missing = [c for c in FEATURES if c not in raw.columns]
             if missing:
                 st.error(f"Missing columns: {missing}")
@@ -154,10 +173,12 @@ elif page == "Dashboard":
                 for c in CATEGORICAL_FEATURES:
                     df[c] = df[c].fillna(defaults[c]).astype(str)
 
+ # Analyse the student data when available.  
     if df is not None and len(df):
         scored = M.predict_many(bundle, df, model_choice)
         counts = scored["predicted_risk"].value_counts().reindex(RISK_LABELS).fillna(0).astype(int)
 
+ # Display student totals for each risk category.     
         k1, k2, k3, k4 = st.columns(4)
         k1.metric("Students", len(scored))
         k2.metric("High risk", counts["High"])
@@ -166,11 +187,15 @@ elif page == "Dashboard":
 
         c1, c2 = st.columns(2)
         with c1:
+          
+  # Create a chart showing student risk levels.        
             fig, ax = plt.subplots(figsize=(4.5, 3.2))
             ax.bar(RISK_LABELS, counts.values, color=[RISK_COLOURS[r] for r in RISK_LABELS])
             ax.set_title("Predicted risk distribution"); ax.set_ylabel("Students")
             st.pyplot(fig)
         with c2:
+
+# Create a chart comparing absences across risk levels.          
             fig, ax = plt.subplots(figsize=(4.5, 3.2))
             sns.boxplot(data=scored, x="predicted_risk", y="absences", order=RISK_LABELS,
                         palette=[RISK_COLOURS[r] for r in RISK_LABELS], hue="predicted_risk",
@@ -179,6 +204,8 @@ elif page == "Dashboard":
             st.pyplot(fig)
 
         st.markdown("#### Student list")
+
+# Allow users to filter students by risk level
         pick = st.multiselect("Filter by risk level", RISK_LABELS, default=["High"])
         view = scored[scored["predicted_risk"].isin(pick)] if pick else scored
         st.dataframe(view, width="stretch", height=320)
@@ -190,6 +217,8 @@ elif page == "Dashboard":
 # ---------------------------------------------------------------------------
 elif page == "Model Performance":
     st.subheader("Model performance")
+
+  # Display the number of students used for trainin
     st.write(f"Trained on **{meta['n_rows']}** students. Best model: **{meta['best_model']}**.")
     table = pd.DataFrame({
         n: {"Test accuracy": r["test_accuracy"], "Test macro-F1": r["test_f1_macro"],
@@ -203,7 +232,11 @@ elif page == "Model Performance":
             fig, ax = plt.subplots(figsize=(4, 3.4))
             sns.heatmap(r["confusion_matrix"], annot=True, fmt="d", cmap="Blues",
                         xticklabels=RISK_LABELS, yticklabels=RISK_LABELS, ax=ax)
+
+          
             ax.set_xlabel("Predicted"); ax.set_ylabel("Actual"); ax.set_title(name)
+
+ # Display the confusion matrix on the dashboard.          
             st.pyplot(fig)
 
     st.markdown("#### Feature importance (best model)")
@@ -219,12 +252,20 @@ elif page == "Chatbot":
     st.subheader("Recommendation chatbot")
     st.caption("Ask about risk levels, study time, attendance or what to do next. "
                "Run an assessment first for personalised advice.")
+
+  # Check whether a chat conversation already exists.  
     if "chat" not in st.session_state:
         st.session_state.chat = [("assistant", "Hi! Ask me about risk levels or say 'what should I do next?'")]
+
+   # Display all existing messages in the conversation.
     for role, text in st.session_state.chat:
         st.chat_message(role).markdown(text)
+
+  # Allow the user to type a question into the chatbot.
     if prompt := st.chat_input("Type your question..."):
         st.session_state.chat.append(("user", prompt))
+
+   # Generate a response using the chatbot function.     
         reply = chatbot_reply(prompt, st.session_state.get("last_result"))
         st.session_state.chat.append(("assistant", reply))
         st.rerun()
@@ -233,6 +274,7 @@ elif page == "Chatbot":
 # 5. About
 # ---------------------------------------------------------------------------
 else:
+  # Display information about the system using Markdown.
     st.subheader("About EduPrediction")
     st.markdown(
         """
