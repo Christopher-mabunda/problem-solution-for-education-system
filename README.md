@@ -1,9 +1,8 @@
 # EduPrediction - Student Risk Prediction System
 
-AI-based early warning system that predicts whether a student is at **Low**, **Medium** or **High**
-academic risk (based on the final grade G3) and recommends practical actions.
+EduPrediction is an AI-powered early-warning system for education analytics. It uses machine learning to estimate whether a student is at Low, Medium, or High academic risk based on factors such as attendance, weekly study time, previous grades, family support, and parental education. The project is built with Python, Streamlit, scikit-learn, Pandas, Matplotlib, and Seaborn to support decision-making for teachers, counsellors, school administrators, and students.
 
-Built with Python, Pandas, NumPy, Scikit-learn, Matplotlib, Seaborn and Streamlit.
+The application trains and compares models such as Decision Tree and Random Forest, then displays prediction results with confidence scores, recommended actions, and model performance metrics. It includes a quick student assessment form, a batch dashboard for scoring data files, feature-importance analysis, and a simple chatbot for risk-related guidance.
 
 | Risk | Final grade (G3) | Meaning |
 |---|---|---|
@@ -49,22 +48,22 @@ project runs out of the box. Replace it with the real file and retrain before re
 1. Install [Python 3.10+](https://www.python.org/downloads/) and [VS Code](https://code.visualstudio.com/) with the **Python** extension.
 2. **File > Open Folder...** and choose the `EduPrediction` folder.
 3. Open a terminal (**Terminal > New Terminal**) and create a virtual environment:
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate            # Windows
-   source venv/bin/activate         # Mac / Linux
-   pip install -r requirements.txt
-   ```
-   If VS Code asks, select the `venv` interpreter (**Ctrl+Shift+P > Python: Select Interpreter**).
+    ```bash
+    python -m venv venv
+    venv\Scripts\activate            # Windows
+    source venv/bin/activate         # Mac / Linux
+    pip install -r requirements.txt
+    ```
+    If VS Code asks, select the `venv` interpreter (**Ctrl+Shift+P > Python: Select Interpreter**).
 4. Train the model:
-   ```bash
-   python train_model.py
-   ```
+    ```bash
+    python train_model.py
+    ```
 5. Start the app:
-   ```bash
-   streamlit run app.py
-   ```
-   It opens at http://localhost:8501.
+    ```bash
+    streamlit run app.py
+    ```
+    It opens at http://localhost:8501.
 
 You can also press **F5** (Run and Debug) and choose *EduPrediction: train model* or
 *EduPrediction: run Streamlit app*.
@@ -75,15 +74,15 @@ You can also press **F5** (Run and Debug) and choose *EduPrediction: train model
 ## Upload to GitHub
 1. Create an empty repository on https://github.com/new (no README, no .gitignore).
 2. In the VS Code terminal, inside the project folder:
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit: EduPrediction"
-   git branch -M main
-   git remote add origin https://github.com/<your-username>/EduPrediction.git
-   git push -u origin main
-   ```
-   Or use the **Source Control** tab in VS Code and click **Publish to GitHub**.
+    ```bash
+    git init
+    git add .
+    git commit -m "Initial commit: EduPrediction"
+    git branch -M main
+    git remote add origin https://github.com/<your-username>/EduPrediction.git
+    git push -u origin main
+    ```
+    Or use the **Source Control** tab in VS Code and click **Publish to GitHub**.
 3. Anyone who clones the repo runs steps 3 to 5 above. The trained model file is not stored in Git
    (it is in `.gitignore`), so `python train_model.py` recreates it.
 
