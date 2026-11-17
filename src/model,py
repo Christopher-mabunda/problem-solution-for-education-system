@@ -1,0 +1,59 @@
+import json
+import joblib
+from pathlib import Path
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+
+from src.config import FEATURES, TARGET, MODEL_DIR, RANDOM_STATE, TEST_SIZE
+
+def train_and_evaluate(df):
+    X = df[FEATURES]
+    y = df[TARGET]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE, stratify=y
+    )
+
+    models = {
+        "logistic": Pipeline([
+            ("scaler", StandardScaler()),
+            ("clf", LogisticRegression(max_iter=1000)),
+        ]),
+        "random_forest": Pipeline([
+            ("scaler", StandardScaler()),
+            ("clf", RandomForestClassifier(n_estimators=100, random_state=RANDOM_STATE)),
+        ]),
+    }
+
+    fitted = {}
+    meta = {}
+
+    for name, model in models.items():
+        model.fit(X_train, y_train)
+        pred = model.predict(X_test)
+        acc = accuracy_score(y_test, pred)
+        fitted[name] = model
+        meta[name] = {
+            "accuracy": float(acc),
+            "report": classification_report(y_test, pred, output_dict=True),
+        }
+        print(f"{name}: accuracy = {acc:.3f}")
+
+    best = max(meta, key=lambda k: meta[k]["accuracy"])
+    print(f"Best model: {best}")
+
+    return fitted, best, meta, (X_test, y_test)
+
+def save(fitted, best, meta):
+    MODEL_DIR.mkdir(parents=True, exist_ok=True)
+    best_model = fitted[best]
+    joblib.dump(best_model, MODEL_DIR / "best_model.pkl")
+    with open(MODEL_DIR / "metrics.json", "w") as f:
+        json.dump(meta, f, indent=2)
+    print(f"Saved best model ({best}) to models/best_model.pkl")
+    

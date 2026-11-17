@@ -1,4 +1,5 @@
 """Train the EduPrediction models and save reports.
+touch src/_init_.py
 
 Usage:  python train_model.py
 """
@@ -14,7 +15,9 @@ from src.data_loader import load_clean
 
 def main():
     df = load_clean()
-    print(f"Loaded {len(df)} students. Risk distribution:\n{df['risk'].value_counts()}\n")
+    print(f"Loaded {len(df)} students. Risk distribution:")
+    print(df['risk'].value_counts())
+    
 
     fitted, best, meta, _ = M.train_and_evaluate(df)
     M.save(fitted, best, meta)
