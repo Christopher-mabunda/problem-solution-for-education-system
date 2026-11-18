@@ -4,7 +4,7 @@ touch src/_init_.py
 Usage:  python train_model.py
 """
 import matplotlib
-matplotlib.use("Agg")
+import matplotlib.pyplot("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 
