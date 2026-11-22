@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 
 from src.config import DATA_FILE
+# Create a random number generator with a fixed seed.
+# Define the number of student records to generate.
 
 rng = np.random.default_rng(42)
 n = 649
