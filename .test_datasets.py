@@ -1,3 +1,8 @@
+# Import JSON to convert Python data into JSON format for HTTP communication.
+# Import OS and threading to manage environment variables and run the test server.
+# Import unittest to create and execute automated tests in Python.
+# Import HTTP server classes to create a fake server
+
 import json
 import os
 import threading
@@ -6,6 +11,9 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from test.support.os_helper import EnvironmentVarGuard
 from urllib.parse import urlparse
 
+# Import KaggleWebClient and the environment variable names used for authentication.
+# CredentialError and BackendError are used to test how the client handles errors.
+
 from kaggle_web_client import (KaggleWebClient,
                             _KAGGLE_URL_BASE_ENV_VAR_NAME,
                             _KAGGLE_USER_SECRETS_TOKEN_ENV_VAR_NAME,
@@ -13,11 +21,18 @@ from kaggle_web_client import (KaggleWebClient,
                             CredentialError, BackendError)
 from kaggle_datasets import KaggleDatasets, _KAGGLE_TPU_NAME_ENV_VAR_NAME
 
+# Create a fake JWT token to simulate Kaggle user authentication during testing.
+# Create a fake Identity-Aware Proxy (IAP) token for authentication testing.
+
 _TEST_JWT = 'test-secrets-key'
 _TEST_IAP = 'IAP_TOKEN'
 
 _TPU_GCS_BUCKET = 'gs://kds-tpu-ea1971a458ffd4cd51389e7574c022ecc0a82bb1b52ccef08c8a'
 _AUTOML_GCS_BUCKET = 'gs://kds-automl-ea1971a458ffd4cd51389e7574c022ecc0a82bb1b52ccef08c8a'
+
+#1. Sends the right request when asking for a dataset. 
+#2. Correctly handles both success and failure responses. 
+#3. Handles missing credentials properly. In short, it's testing both the 'happy path' and the error cases, ensuring the client behaves reliably.
 
 class GcsDatasetsHTTPHandler(BaseHTTPRequestHandler):
 
@@ -37,13 +52,14 @@ class GcsDatasetsHTTPHandler(BaseHTTPRequestHandler):
         s.end_headers()
         s.wfile.write(json.dumps(s.get_response()).encode("utf-8"))
 
+#1. Checks whether the client detects missing login credentials and raises the correct error.
 
 class TestDatasets(unittest.TestCase):
     SERVER_ADDRESS = urlparse(os.getenv(_KAGGLE_URL_BASE_ENV_VAR_NAME, default="http://127.0.0.1:0"))
 
     def _test_client(self, client_func, expected_path, expected_body, is_tpu=True, success=True, iap_token=False):
         _request = {}
-
+# Checks whether the client sends the correct request path, request body and authentication headers.
         class GetGcsPathHandler(GcsDatasetsHTTPHandler):
 
             def set_request(self):
@@ -52,6 +68,8 @@ class TestDatasets(unittest.TestCase):
                 _request['body'] = json.loads(self.rfile.read(content_len))
                 _request['headers'] = self.headers
 
+#Checks whether the client retrieves the correct Google Cloud Storage bucket for TPU datasets
+          
             def get_response(self):
                 if success:
                     gcs_path = _TPU_GCS_BUCKET if is_tpu else _AUTOML_GCS_BUCKET
@@ -60,7 +78,7 @@ class TestDatasets(unittest.TestCase):
                         'destinationPath': None}, 'wasSuccessful': "true"}
                 else:
                     return {'wasSuccessful': "false"}
-
+# Checks whether the client handles unsuccessful server responses by raising a BackendError
         env = EnvironmentVarGuard()
         env.set(_KAGGLE_USER_SECRETS_TOKEN_ENV_VAR_NAME, _TEST_JWT)
         if is_tpu:
@@ -72,6 +90,7 @@ class TestDatasets(unittest.TestCase):
                 threading.Thread(target=httpd.serve_forever).start()
 
                 try:
+                    # Checks whether the client correctly sends an additional Identity-Aware Proxy (IAP) authentication token.
                     # Make sure this server is pointed to by clients (the port may have been dynamically chosen): 
                     env.set(_KAGGLE_URL_BASE_ENV_VAR_NAME, "http://"+httpd.server_address[0]+":"+str(httpd.server_address[1]))
                     client_func()
@@ -102,6 +121,8 @@ class TestDatasets(unittest.TestCase):
                 self.assertEqual(f'Bearer {_TEST_JWT}', headers.get('X-Kaggle-Authorization'),
                     msg="Fake server did not receive the right X-Kaggle-Authorization header from the KaggleDatasets client.")
 
+# Checks whether the client retrieves the correct Google Cloud Storage bucket for TPU datasets
+  
     def test_no_token_fails(self):
         env = EnvironmentVarGuard()
         env.unset(_KAGGLE_USER_SECRETS_TOKEN_ENV_VAR_NAME)
@@ -148,3 +169,7 @@ class TestDatasets(unittest.TestCase):
                           '/requests/CopyDatasetVersionToKnownGcsBucketRequest',
                           {'MountSlug': None, 'IntegrationType': 1},
                           is_tpu=False, iap_token=True)
+ #To verify that the Kaggle Datasets client works correctly.
+#To identify authentication and communication errors.
+#To ensure that the correct dataset storage locations are returned.
+#To confirm that the client handles successful and unsuccessful requests properly.
