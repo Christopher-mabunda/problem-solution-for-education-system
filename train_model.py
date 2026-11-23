@@ -20,7 +20,7 @@ def main():
     print(f"Loaded {len(df)} students. Risk distribution:")
     print(df['risk'].value_counts())
     
-     # Store the trained models, best model and evaluation results.
+     # Store the trained models, best model and evaluation results.logistic regression, decision tree and random forest
      # Also save the information about model performance.
     fitted, best, meta, _ = M.train_and_evaluate(df)
     M.save(fitted, best, meta)
