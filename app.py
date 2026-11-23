@@ -62,6 +62,7 @@ st.sidebar.caption("ANSWER. ANALYSE. ACT.")
 
 
 # ---------------------------------------------------------------------------
+# This code contains five main sections of the EduPrediction application:
 def risk_card(risk: str, probs: dict):
     st.markdown(
         f'<div class="risk-card" style="background:{RISK_COLOURS[risk]}">'
@@ -77,6 +78,9 @@ def risk_card(risk: str, probs: dict):
 # ---------------------------------------------------------------------------
 # 1. Assessment
 # ---------------------------------------------------------------------------
+
+# Collects student information, such as age, gender, study time, absences and grades. 
+# The AI uses this information to predict whether a student is at Low, Medium or High Risk.
 if page == "Assessment":
     st.subheader("Student risk assessment")
     st.write("Answer five short questions to get a risk level and recommended actions.")
@@ -142,6 +146,10 @@ if page == "Assessment":
 # ---------------------------------------------------------------------------
 # 2. Dashboard
 # ---------------------------------------------------------------------------
+
+# Allows lecturers or administrators to upload student data or use the existing dataset.
+# It displays student totals, risk categories and graphs.
+
 elif page == "Dashboard":
     st.subheader("Lecturer / administrator dashboard")
 
@@ -215,6 +223,9 @@ elif page == "Dashboard":
 # ---------------------------------------------------------------------------
 # 3. Model performance
 # ---------------------------------------------------------------------------
+
+# Shows how well the machine learning models perform using accuracy, F1-scores and confusion matrices. 
+# It also displays feature importance.
 elif page == "Model Performance":
     st.subheader("Model performance")
 
@@ -248,6 +259,9 @@ elif page == "Model Performance":
 # ---------------------------------------------------------------------------
 # 4. Chatbot
 # ---------------------------------------------------------------------------
+
+# Allows users to ask questions about academic risk, study time, attendance and recommendations.
+# and which student is at risk
 elif page == "Chatbot":
     st.subheader("Recommendation chatbot")
     st.caption("Ask about risk levels, study time, attendance or what to do next. "
@@ -273,6 +287,11 @@ elif page == "Chatbot":
 # ---------------------------------------------------------------------------
 # 5. About
 # ---------------------------------------------------------------------------
+
+# Explains what the EduPrediction system is and how it works.
+# Shows the three student academic risk levels
+# Provides information to help users understand the system and the meaning of each risk level.
+
 else:
   # Display information about the system using Markdown.
     st.subheader("About EduPrediction")
