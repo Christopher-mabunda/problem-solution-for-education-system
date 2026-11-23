@@ -62,7 +62,8 @@ st.sidebar.caption("ANSWER. ANALYSE. ACT.")
 
 
 # ---------------------------------------------------------------------------
-# This code contains five main sections of the EduPrediction application:
+# This code contains five main sections of the EduPrediction application
+# --------------------------------------------------------------------------
 def risk_card(risk: str, probs: dict):
     st.markdown(
         f'<div class="risk-card" style="background:{RISK_COLOURS[risk]}">'
